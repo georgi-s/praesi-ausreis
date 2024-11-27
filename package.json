@@ -1,26 +1,17 @@
 {
   "name": "parallax-presentation",
-  "description": "The real test of a parallax component, horizontal scrolling",
-  "keywords": [
-    "Parallax",
-    "horizontal"
-  ],
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start"
   },
   "dependencies": {
-    "@react-spring/parallax": "^9.7.5",
-    "@react-spring/web": "^9.7.5",
-    "next": "^15.0.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "stable": "^0.1.8",
-    "framer-motion": "^10.16.4",
+    "@react-spring/parallax": "^9.7.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next": "^14.0.3",
     "react-chartjs-2": "^5.2.0",
     "chart.js": "^4.4.0"
   },
