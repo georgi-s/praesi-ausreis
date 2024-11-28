@@ -75,3 +75,8 @@ body {
 canvas {
   max-height: 50vh;
 }
+/* Dock-Styling */
+.fixed {
+  will-change: contents;
+  box-sizing: content-box;
+}
