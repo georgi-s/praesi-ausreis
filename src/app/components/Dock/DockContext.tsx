@@ -1,44 +1,21 @@
-// "use client";
-
-// import * as React from "react";
-// import { SpringValue } from "@react-spring/web";
-
-// interface DockContextType {
-//   width: number;
-//   hovered: boolean;
-//   setIsZooming: (value: boolean) => void;
-//   zoomLevel: SpringValue<number>;
-// }
-
-// export const DockContext = React.createContext<DockContextType>({
-//   width: 0,
-//   hovered: false,
-//   setIsZooming: () => {},
-//   zoomLevel: new SpringValue(1),
-// });
-
-// export function useDock() {
-//   return React.useContext(DockContext);
-// }
 "use client";
 
-import * as React from "react";
+import { createContext, useContext } from "react";
 import { SpringValue } from "@react-spring/web";
 
-interface DockContextType {
-  width: number;
+type DockApi = {
   hovered: boolean;
-  setIsZooming: (value: boolean) => void;
-  zoomLevel: SpringValue<number>;
-}
+  width: number;
+  zoomLevel?: SpringValue;
+  setIsZooming: (isZooming: boolean) => void;
+};
 
-export const DockContext = React.createContext<DockContextType>({
+export const DockContext = createContext<DockApi>({
   width: 0,
   hovered: false,
   setIsZooming: () => {},
-  zoomLevel: new SpringValue(1),
 });
 
-export function useDock() {
-  return React.useContext(DockContext);
-}
+export const useDock = () => {
+  return useContext(DockContext);
+};
