@@ -23,7 +23,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./components/Providers";
-import { LoginButton } from "@/app/components/LoginButton";
 
 export const metadata: Metadata = {
   title: "Parallax Presentation",
