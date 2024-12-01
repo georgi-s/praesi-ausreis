@@ -14,7 +14,6 @@ import {
   deleteComment,
   toggleCommentCompletion,
 } from "@/app/lib/api/commentClient";
-import { LoginButton } from "./components/LoginButton";
 
 export default function Home() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -93,12 +92,6 @@ export default function Home() {
     <main className="relative min-h-screen">
       <ParallaxPresentation onSlideChange={handleSlideChange} />
       <FloatingButton />
-      <LoginButton />
-      {/* <CommentDialog
-        isOpen={isDialogOpen}
-        onClose={handleCloseDialog}
-        onSubmit={handleAddComment}
-      /> */}
       <CommentSidebar
         currentSlide={currentSlide}
         comments={comments}
