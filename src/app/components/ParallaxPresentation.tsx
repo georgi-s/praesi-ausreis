@@ -1,40 +1,16 @@
-"use client";
-
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Parallax, ParallaxLayer, IParallax } from "@react-spring/parallax";
-import { slides, SlideContent } from "../data/slideContent";
+import { slides } from "../data/slideContent";
 import { Dock } from "./Dock/Dock";
 import { DockCard } from "./DockCard/DockCard";
 
-interface PageProps extends SlideContent {
-  offset: number;
-  onClick: () => void;
+interface ParallaxPresentationProps {
+  onSlideChange: (index: number) => void;
 }
 
-const Page = ({ offset, gradient, onClick, title, content }: PageProps) => (
-  <>
-    <ParallaxLayer offset={offset} speed={0.2} onClick={onClick}>
-      <div className="slopeBegin" />
-    </ParallaxLayer>
-
-    <ParallaxLayer offset={offset} speed={0.6} onClick={onClick}>
-      <div className={`slopeEnd ${gradient}`} />
-    </ParallaxLayer>
-
-    <ParallaxLayer className="text content" offset={offset} speed={0.3}>
-      <div className="content-wrapper">
-        <h2>{title}</h2>
-        <p>{content}</p>
-      </div>
-    </ParallaxLayer>
-
-    <ParallaxLayer className="text number" offset={offset} speed={0.3}>
-      <span>0{offset + 1}</span>
-    </ParallaxLayer>
-  </>
-);
-
-export default function ParallaxPresentation() {
+export default function ParallaxPresentation({
+  onSlideChange,
+}: ParallaxPresentationProps) {
   const parallax = useRef<IParallax>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -42,8 +18,25 @@ export default function ParallaxPresentation() {
     if (parallax.current) {
       parallax.current.scrollTo(to);
       setCurrentSlide(to);
+      onSlideChange(to);
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" && currentSlide < slides.length - 1) {
+        scroll(currentSlide + 1);
+      } else if (e.key === "ArrowLeft" && currentSlide > 0) {
+        scroll(currentSlide - 1);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [currentSlide]);
 
   return (
     <div style={{ width: "100vw", height: "100vh", background: "#dfdfdf" }}>
@@ -54,12 +47,26 @@ export default function ParallaxPresentation() {
         style={{ top: "0", left: "0" }}
       >
         {slides.map((slide, index) => (
-          <Page
-            key={index}
-            offset={index}
-            {...slide}
-            onClick={() => scroll((index + 1) % slides.length)}
-          />
+          <React.Fragment key={index}>
+            <ParallaxLayer offset={index} speed={0.2}>
+              <div className="slopeBegin" />
+            </ParallaxLayer>
+
+            <ParallaxLayer offset={index} speed={0.6}>
+              <div className={`slopeEnd ${slide.gradient}`} />
+            </ParallaxLayer>
+
+            <ParallaxLayer className="text content" offset={index} speed={0.3}>
+              <div className="content-wrapper">
+                <h2>{slide.title}</h2>
+                <p>{slide.content}</p>
+              </div>
+            </ParallaxLayer>
+
+            <ParallaxLayer className="text number" offset={index} speed={0.3}>
+              <span>0{index + 1}</span>
+            </ParallaxLayer>
+          </React.Fragment>
         ))}
       </Parallax>
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2">
