@@ -8,7 +8,7 @@ import {
   Trash,
   Check,
 } from "lucide-react";
-import { Comment } from "@/types/comment";
+import { Comment, CommentData } from "@/types/comment";
 import CommentForm from "./CommentForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 
 interface CommentSidebarProps {
   currentSlide: number;
-  comments: Comment[];
+  comments: CommentData[];
   onAddComment: (content: string) => Promise<void>;
   onUpdateComment: (id: string, content: string) => Promise<void>;
   onDeleteComment: (id: string) => Promise<void>;

@@ -6,7 +6,7 @@ import ParallaxPresentation from "@/app/components/ParallaxPresentation";
 import FloatingButton from "./components/FloatingButton";
 // import { CommentDialog } from "./components/CommentDialog";
 import CommentSidebar from "./components/CommentSidebar";
-import { Comment } from "@/types/comment";
+import { Comment, CommentData } from "@/types/comment";
 import {
   fetchComments,
   addComment,
@@ -17,7 +17,7 @@ import {
 
 export default function Home() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentData[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { data: session, status } = useSession();
 
@@ -36,7 +36,6 @@ export default function Home() {
     if (session?.user) {
       const newComment = await addComment(content, 0, 0, currentSlide);
       if (newComment) {
-        // @ts-ignore
         setComments((prevComments) => [...prevComments, newComment]);
       }
     } else {
