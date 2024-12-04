@@ -35,12 +35,12 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    redirect({ url, baseUrl }) {
-      const finalBaseUrl = process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NEXTAUTH_URL || baseUrl;
-      return url.startsWith(finalBaseUrl) ? url : finalBaseUrl;
-    },
+    // redirect({ url, baseUrl }) {
+    //   const finalBaseUrl = process.env.VERCEL_URL
+    //     ? `https://${process.env.VERCEL_URL}`
+    //     : process.env.NEXTAUTH_URL || baseUrl;
+    //   return url.startsWith(finalBaseUrl) ? url : finalBaseUrl;
+    // },
   },
   debug: true,
   logger: {
