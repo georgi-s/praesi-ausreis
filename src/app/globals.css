@@ -68,14 +68,14 @@
   }
 }
 
-@layer base {
+/* @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
-}
+} */
 
 html,
 body {
@@ -198,4 +198,26 @@ body {
 }
 .button {
   transition: all 0.1s ease;
+}
+@keyframes dash {
+  to {
+    stroke-dashoffset: 1000;
+  }
+}
+
+@keyframes glow {
+  from {
+    stroke-opacity: 0.6;
+  }
+  to {
+    stroke-opacity: 1;
+  }
+}
+
+.animate-dash {
+  animation: dash 10s linear infinite;
+}
+
+.animate-glow {
+  animation: glow 1.5s ease-in-out infinite;
 }

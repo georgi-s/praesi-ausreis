@@ -1,46 +1,32 @@
 "use client";
 
-import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import ParallaxPresentation from "@/app/components/ParallaxPresentation";
-import FloatingButton from "./components/FloatingButton";
-import CommentSidebar from "./components/CommentSidebar";
-import { Comment } from "@/types/comment";
-import useSWR from "swr";
-import { fetchComments } from "@/app/lib/api/commentClient";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import LoginPage from "@/app/pages/login/page";
+import HomePage from "@/app/pages/home/page";
+import { Loader2 } from "lucide-react";
 
-export default function Home() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const { data: session } = useSession();
+export default function App() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  const { data: comments = [], mutate } = useSWR<Comment[]>(
-    "/api/comments",
-    fetchComments,
-    {
-      refreshInterval: 1000, // Poll every second for updates
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/home");
     }
-  );
+  }, [status, router]);
 
-  const handleSlideChange = (index: number) => {
-    setCurrentSlide(index);
-  };
-
-  const user = session?.user || {
-    name: "Gast",
-    image: "https://via.placeholder.com/40",
-  };
+  if (status === "loading") {
+    <div className="flex items-center justify-center min-h-screen">
+      <Loader2 className="w-8 h-8 animate-spin" />
+    </div>;
+  }
 
   return (
-    <main className="relative min-h-screen">
-      <ParallaxPresentation onSlideChange={handleSlideChange} />
-      <FloatingButton />
-      <CommentSidebar
-        currentSlide={currentSlide}
-        comments={comments}
-        mutateComments={mutate}
-        userAvatar={user.image || ""}
-        userName={user.name || ""}
-      />
-    </main>
+    <>
+      {!session && <LoginPage />}
+      {session && <HomePage />}
+    </>
   );
 }
