@@ -6,10 +6,6 @@ export interface CommentData {
   positionX: number;
   positionY: number;
   slideIndex: number;
-  // user: {
-  //   name: string;
-  //   avatar: string;
-  // };
   user: User;
   parentId: string | null;
   replies: CommentData[];

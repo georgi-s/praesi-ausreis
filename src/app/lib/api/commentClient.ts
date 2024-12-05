@@ -1,20 +1,24 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { CommentData, Comment } from "@/types/comment";
+
+const handleError = (error: unknown, errorMessage: string) => {
+  console.error(errorMessage, error);
+  if (error instanceof AxiosError) {
+    alert(`${errorMessage}: ${error.response?.data?.error || error.message}`);
+  } else {
+    alert(errorMessage);
+  }
+};
 
 export const fetchComments = async (): Promise<Comment[]> => {
   try {
-    const response = await axios.get("/api/comments");
-    const commentsData: CommentData[] = response.data;
-
-    // Konvertiere CommentData zu Comment, indem timestamp hinzugefügt wird
-    const comments: Comment[] = commentsData.map((comment) => ({
+    const response = await axios.get<CommentData[]>("/api/comments");
+    return response.data.map((comment) => ({
       ...comment,
-      timestamp: new Date(comment.createdAt).toLocaleString(), // oder ein anderes gewünschtes Format
+      timestamp: new Date(comment.createdAt).toLocaleString(),
     }));
-
-    return comments;
   } catch (error) {
-    console.error("Fehler beim Laden der Kommentare:", error);
+    handleError(error, "Fehler beim Laden der Kommentare");
     return [];
   }
 };
@@ -27,7 +31,7 @@ export const addComment = async (
   parentId?: string
 ): Promise<CommentData | null> => {
   try {
-    const response = await axios.post("/api/comments", {
+    const response = await axios.post<CommentData>("/api/comments", {
       content,
       positionX,
       positionY,
@@ -37,10 +41,7 @@ export const addComment = async (
     console.log("Kommentar hinzugefügt:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Fehler beim Hinzufügen des Kommentars:", error);
-    alert(
-      "Fehler beim Hinzufügen des Kommentars. Bitte versuchen Sie es erneut."
-    );
+    handleError(error, "Fehler beim Hinzufügen des Kommentars");
     return null;
   }
 };
@@ -52,14 +53,14 @@ export const updateComment = async (
   positionY: number
 ): Promise<CommentData | null> => {
   try {
-    const response = await axios.put(`/api/comments/${id}`, {
+    const response = await axios.put<CommentData>(`/api/comments/${id}`, {
       content,
       positionX,
       positionY,
     });
     return response.data;
   } catch (error) {
-    console.error("Fehler beim Aktualisieren des Kommentars:", error);
+    handleError(error, "Fehler beim Aktualisieren des Kommentars");
     return null;
   }
 };
@@ -69,7 +70,7 @@ export const deleteComment = async (id: string): Promise<boolean> => {
     await axios.delete(`/api/comments/${id}`);
     return true;
   } catch (error) {
-    console.error("Fehler beim Löschen des Kommentars:", error);
+    handleError(error, "Fehler beim Löschen des Kommentars");
     return false;
   }
 };
@@ -78,10 +79,12 @@ export const toggleCommentCompletion = async (
   id: string
 ): Promise<CommentData | null> => {
   try {
-    const response = await axios.patch(`/api/comments/${id}/toggle-completion`);
+    const response = await axios.patch<CommentData>(
+      `/api/comments/${id}/toggle-completion`
+    );
     return response.data;
   } catch (error) {
-    console.error("Fehler beim Ändern des Erledigtstatus:", error);
+    handleError(error, "Fehler beim Ändern des Erledigtstatus");
     return null;
   }
 };

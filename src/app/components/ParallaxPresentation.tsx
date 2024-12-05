@@ -3,16 +3,53 @@ import { Parallax, ParallaxLayer, IParallax } from "@react-spring/parallax";
 import { slides } from "../data/slideContent";
 import { Dock } from "./Dock/Dock";
 import { DockCard } from "./DockCard/DockCard";
+import CollaborativeCursor from "./CollaborativeCursor";
+import { useSession } from "next-auth/react";
+import useSWR from "swr";
 
 interface ParallaxPresentationProps {
   onSlideChange: (index: number) => void;
 }
+
+interface CursorPosition {
+  x: number;
+  y: number;
+  userId: string;
+  userName: string;
+}
+
+const fetcher = (url: string, init?: RequestInit) =>
+  fetch(url, init).then((res) => res.json());
 
 export default function ParallaxPresentation({
   onSlideChange,
 }: ParallaxPresentationProps) {
   const parallax = useRef<IParallax>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { data: session } = useSession();
+  const { data: cursorPositions = [], mutate: mutateCursorPositions } = useSWR<
+    CursorPosition[]
+  >("/api/cursor-positions", fetcher, {
+    refreshInterval: 100, // Poll every 100ms for cursor updates
+  });
+
+  const updateCursorPosition = async (x: number, y: number) => {
+    if (session?.user?.id) {
+      await fetch("/api/cursor-positions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          x,
+          y,
+          userId: session.user.id,
+          userName: session.user.name || "Anonymous",
+        }),
+      });
+      mutateCursorPositions();
+    }
+  };
 
   const scroll = (to: number) => {
     if (parallax.current) {
@@ -38,8 +75,15 @@ export default function ParallaxPresentation({
     };
   }, [currentSlide]);
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    updateCursorPosition(e.clientX, e.clientY);
+  };
+
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#dfdfdf" }}>
+    <div
+      style={{ width: "100vw", height: "100vh", background: "#dfdfdf" }}
+      onMouseMove={handleMouseMove}
+    >
       <Parallax
         ref={parallax}
         pages={slides.length}
@@ -87,6 +131,16 @@ export default function ParallaxPresentation({
           ))}
         </Dock>
       </div>
+      {Array.isArray(cursorPositions) &&
+        cursorPositions.map((cursor: CursorPosition) => (
+          <CollaborativeCursor
+            key={cursor.userId}
+            x={cursor.x}
+            y={cursor.y}
+            color={`#${cursor.userId.slice(0, 6)}`}
+            name={cursor.userName}
+          />
+        ))}
     </div>
   );
 }
