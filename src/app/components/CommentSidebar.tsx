@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronLeft,
-  ChevronRight,
-  MessageCircle,
-  Edit,
-  Trash,
-  Check,
-} from "lucide-react";
+import React, { useState } from "react";
+import { MessageCircle, Edit, Trash, Check } from "lucide-react";
 import { Comment } from "@/types/comment";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { LoginButton } from "@/components/auth/LoginButton"; 
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   addComment,
   updateComment,
@@ -27,6 +27,7 @@ interface CommentSidebarProps {
   mutateComments: () => void;
   userAvatar: string;
   userName: string;
+  currentUserId: string;
 }
 
 const CommentSidebar: React.FC<CommentSidebarProps> = ({
@@ -35,32 +36,41 @@ const CommentSidebar: React.FC<CommentSidebarProps> = ({
   mutateComments,
   userAvatar,
   userName,
+  currentUserId,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isFullyOpen, setIsFullyOpen] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [newComment, setNewComment] = useState("");
-
-  const handleToggle = useCallback(() => {
-    if (isOpen) {
-      setIsFullyOpen(false);
-      setTimeout(() => setIsOpen(false), 500);
-    } else {
-      setIsOpen(true);
-      setTimeout(() => setIsFullyOpen(true), 500);
-    }
-  }, [isOpen]);
-
-  const filteredComments = comments.filter(
-    (comment) => comment.slideIndex === currentSlide
-  );
+  const [replyToComment, setReplyToComment] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleAddComment = async (content: string) => {
-    const newCommentData = await addComment(content, 0, 0, currentSlide);
-    if (newCommentData) {
+    if (!content.trim()) return;
+
+    try {
+      const response = await fetch("/api/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: content.trim(),
+          slideIndex: currentSlide,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Fehler beim Hinzufügen des Kommentars"
+        );
+      }
+
+      await mutateComments();
       setNewComment("");
-      mutateComments();
+    } catch (error) {
+      console.error("Fehler beim Hinzufügen des Kommentars:", error);
     }
   };
 
@@ -87,156 +97,312 @@ const CommentSidebar: React.FC<CommentSidebarProps> = ({
     }
   };
 
-  const handleKeyPress = async (
-    e: React.KeyboardEvent<HTMLTextAreaElement>
+  const handleAddReply = async (parentId: string, content: string) => {
+    if (!content.trim()) return;
+
+    try {
+      const response = await fetch("/api/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: content.trim(),
+          slideIndex: currentSlide,
+          parentId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Fehler beim Hinzufügen der Antwort"
+        );
+      }
+
+      await mutateComments();
+      setReplyContent("");
+      setReplyToComment(null);
+    } catch (error) {
+      console.error("Fehler beim Hinzufügen der Antwort:", error);
+    }
+  };
+
+  const handleKeyDown = async (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+    type: "comment" | "reply" = "comment"
   ) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (newComment.trim()) {
+      if (type === "comment" && newComment.trim()) {
         await handleAddComment(newComment);
+      } else if (type === "reply" && replyContent.trim() && replyToComment) {
+        await handleAddReply(replyToComment, replyContent);
       }
     }
   };
 
-  //if (error) return <div>Failed to load comments</div>;
+  const filteredComments = comments.filter(
+    (comment) => comment.slideIndex === currentSlide
+  );
+  const mainComments = filteredComments.filter((comment) => !comment.parentId);
+  const replyComments = filteredComments.filter((comment) => comment.parentId);
 
   return (
-    <motion.div
-      className="fixed right-0 top-0 h-full flex items-stretch"
-      initial={{ x: "calc(100% - 40px)" }}
-      animate={{ x: isOpen ? 0 : "calc(100% - 40px)" }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-    >
-      <motion.div
-        className="bg-blue-600 text-white cursor-pointer z-50 flex flex-col items-center justify-between rounded-l-[0.5rem] overflow-hidden"
-        initial={{ width: "40px", height: "120px" }}
-        animate={{
-          width: "40px",
-          height: isFullyOpen ? "100%" : "120px",
-        }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-      >
-        <button
-          onClick={handleToggle}
-          className="w-full p-2 flex items-center justify-center"
+    <Drawer open={isOpen} onOpenChange={setIsOpen}>
+      <DrawerTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className="fixed bottom-4 right-4 h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
         >
-          {isOpen ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
-        </button>
-        <div className="p-2 flex flex-col items-center">
-          <MessageCircle size={24} />
-          <span className="text-sm font-bold">{filteredComments.length}</span>
-        </div>
-      </motion.div>
+          <MessageCircle className="h-6 w-6" />
+          {filteredComments.length > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              {filteredComments.length}
+            </span>
+          )}
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent className="h-[85vh] bg-white backdrop-blur-sm">
+        <DrawerHeader className="border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <DrawerTitle>Kommentare</DrawerTitle>
+            <LoginButton />
+          </div>
+        </DrawerHeader>
+        <div className="px-4 max-w-2xl mx-auto w-full">
+          <div className="relative mb-4">
+            <textarea
+              placeholder="Schreibe einen Kommentar..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, "comment")}
+              className="w-full border border-gray-200 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all bg-white text-gray-900 placeholder:text-gray-500"
+              rows={3}
+            />
+            <div className="absolute bottom-3 right-3">
+              <Button
+                onClick={() =>
+                  newComment.trim() && handleAddComment(newComment)
+                }
+                disabled={!newComment.trim()}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Senden
+              </Button>
+            </div>
+          </div>
 
-      <motion.div
-        className="bg-white shadow-lg flex flex-col overflow-hidden"
-        initial={{ width: 0, height: "120px" }}
-        animate={{
-          width: isOpen ? "320px" : 0,
-          height: isFullyOpen ? "100%" : "120px",
-        }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-      >
-        <AnimatePresence>
-          {isFullyOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex-grow flex flex-col w-full"
-            >
-              <div className="p-4">
-                <h2 className="text-2xl font-bold mb-4">Kommentare</h2>
-                <textarea
-                  placeholder="Schreibe einen Kommentar..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="w-full border p-2 rounded focus:outline-none"
-                  rows={3}
-                />
+          <Separator className="my-4" />
+
+          <ScrollArea className="h-[calc(85vh-200px)] pr-4">
+            {filteredComments.length === 0 ? (
+              <div className="text-center py-8">
+                <MessageCircle className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                <p className="text-gray-500 text-lg">
+                  Keine Kommentare für diese Folie.
+                </p>
               </div>
-              <Separator />
-              <ScrollArea className="flex-grow">
-                <div className="p-4">
-                  {filteredComments.length === 0 ? (
-                    <p className="text-gray-500">
-                      Keine Kommentare für diese Folie.
-                    </p>
-                  ) : (
-                    filteredComments.map((comment) => (
-                      <div
-                        key={comment.id}
-                        className="bg-gray-100 rounded-lg p-4 mb-4 shadow-sm"
-                      >
-                        <div className="flex items-center mb-2">
-                          <span className="font-semibold">
-                            {comment.user?.name}
-                          </span>
-                          <span className="text-gray-500 text-sm ml-auto">
-                            {comment.timestamp}
-                          </span>
-                        </div>
-                        {editingCommentId === comment.id ? (
-                          <div>
-                            <textarea
-                              value={editContent}
-                              onChange={(e) => setEditContent(e.target.value)}
-                              className="w-full p-2 border rounded"
-                            />
-                            <Button
-                              onClick={() =>
-                                handleUpdateComment(comment.id, editContent)
-                              }
-                              className="mr-2"
-                            >
-                              Speichern
-                            </Button>
-                            <Button onClick={() => setEditingCommentId(null)}>
-                              Abbrechen
-                            </Button>
-                          </div>
-                        ) : (
-                          <p className="text-gray-700">{comment.content}</p>
-                        )}
-                        <div className="mt-2 flex justify-end space-x-2">
+            ) : (
+              <div className="space-y-4 pb-8">
+                {mainComments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center mb-3">
+                      <div className="flex items-center">
+                        <img
+                          src={userAvatar}
+                          alt={userName}
+                          className="w-8 h-8 rounded-full mr-2"
+                        />
+                        <span className="font-medium text-gray-900">
+                          {comment.user?.name}
+                        </span>
+                      </div>
+                      <span className="text-gray-400 text-sm ml-auto">
+                        {new Date(comment.timestamp).toLocaleString("de-DE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+
+                    {editingCommentId === comment.id ? (
+                      <div className="space-y-3">
+                        <textarea
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          onKeyDown={(e) => handleKeyDown(e)}
+                          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all bg-white text-gray-900 placeholder:text-gray-500"
+                          rows={3}
+                        />
+                        <div className="flex justify-end space-x-2">
                           <Button
-                            onClick={() => {
-                              setEditingCommentId(comment.id);
-                              setEditContent(comment.content);
-                            }}
-                            className="w-10 h-10 p-0 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:via-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center"
+                            onClick={() =>
+                              handleUpdateComment(comment.id, editContent)
+                            }
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
                           >
-                            <Edit size={18} className="text-white" />
+                            Speichern
                           </Button>
                           <Button
-                            onClick={() => handleDeleteComment(comment.id)}
-                            className="w-10 h-10 p-0 rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center"
+                            onClick={() => setEditingCommentId(null)}
+                            variant="outline"
                           >
-                            <Trash size={18} className="text-white" />
-                          </Button>
-                          <Button
-                            onClick={() => handleToggleCompletion(comment.id)}
-                            className={`w-10 h-10 p-0 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center ${
-                              comment.isCompleted
-                                ? "bg-gradient-to-bl from-green-400 via-teal-500 to-blue-500 hover:from-green-500 hover:via-teal-600 hover:to-blue-600"
-                                : "bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 hover:from-gray-500 hover:via-gray-600 hover:to-gray-700"
-                            }`}
-                          >
-                            <Check size={18} className="text-white" />
+                            Abbrechen
                           </Button>
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </motion.div>
+                    ) : (
+                      <>
+                        <p className="text-gray-700 mb-3 whitespace-pre-wrap">
+                          {comment.content}
+                        </p>
+                        <div className="flex justify-end items-center space-x-2">
+                          {currentUserId === comment.user?.id && (
+                            <>
+                              <Button
+                                onClick={() => {
+                                  setEditingCommentId(comment.id);
+                                  setEditContent(comment.content);
+                                }}
+                                variant="ghost"
+                                size="sm"
+                                className="text-gray-500 hover:text-blue-600"
+                              >
+                                <Edit size={16} className="mr-1" />
+                                Bearbeiten
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-gray-500 hover:text-red-600"
+                              >
+                                <Trash size={16} className="mr-1" />
+                                Löschen
+                              </Button>
+                            </>
+                          )}
+                          <Button
+                            onClick={() => handleToggleCompletion(comment.id)}
+                            variant="ghost"
+                            size="sm"
+                            className={`${
+                              comment.isCompleted
+                                ? "bg-green-50 text-green-600"
+                                : "text-gray-500 hover:text-green-600"
+                            }`}
+                          >
+                            <Check size={16} className="mr-1" />
+                            {comment.isCompleted
+                              ? "Erledigt"
+                              : "Als erledigt markieren"}
+                          </Button>
+                          <Button
+                            onClick={() => setReplyToComment(comment.id)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-gray-500 hover:text-blue-600"
+                          >
+                            Antworten
+                          </Button>
+                        </div>
+
+                        {replyToComment === comment.id && (
+                          <div className="mt-4 space-y-3">
+                            <textarea
+                              value={replyContent}
+                              onChange={(e) => setReplyContent(e.target.value)}
+                              onKeyDown={(e) => handleKeyDown(e, "reply")}
+                              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all bg-white text-gray-900 placeholder:text-gray-500"
+                              rows={3}
+                            />
+                            <div className="flex justify-end space-x-2">
+                              <Button
+                                onClick={() =>
+                                  handleAddReply(comment.id, replyContent)
+                                }
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                Antworten
+                              </Button>
+                              <Button
+                                onClick={() => setReplyToComment(null)}
+                                variant="outline"
+                              >
+                                Abbrechen
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Replies */}
+                    {replyComments
+                      .filter((reply) => reply.parentId === comment.id)
+                      .map((reply) => (
+                        <div
+                          key={reply.id}
+                          className="mt-4 ml-8 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100"
+                        >
+                          <div className="flex items-center mb-3">
+                            <div className="flex items-center">
+                              <img
+                                src={userAvatar}
+                                alt={userName}
+                                className="w-8 h-8 rounded-full mr-2"
+                              />
+                              <span className="font-medium text-gray-900">
+                                {reply.user?.name}
+                              </span>
+                            </div>
+                            <span className="text-gray-400 text-sm ml-auto">
+                              {new Date(reply.timestamp).toLocaleString(
+                                "de-DE",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </span>
+                          </div>
+                          <p className="text-gray-700 mb-3 whitespace-pre-wrap">
+                            {reply.content}
+                          </p>
+                          {currentUserId === reply.user?.id && (
+                            <div className="flex justify-end space-x-2">
+                              <Button
+                                onClick={() => handleDeleteComment(reply.id)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-gray-500 hover:text-red-600"
+                              >
+                                <Trash size={16} className="mr-1" />
+                                Löschen
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 };
 

@@ -3,8 +3,8 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import LoginPage from "@/app/pages/login/page";
-import HomePage from "@/app/pages/home/page";
+import LoginPage from "@/app/login/page";
+import HomePage from "@/app/home/page";
 import { Loader2 } from "lucide-react";
 
 export default function App() {

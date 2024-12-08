@@ -79,12 +79,11 @@ export const toggleCommentCompletion = async (
   id: string
 ): Promise<CommentData | null> => {
   try {
-    const response = await axios.patch<CommentData>(
-      `/api/comments/${id}/toggle-completion`
-    );
+    const response = await axios.patch<CommentData>(`/api/comments/${id}/complete`);
+    console.log("Kommentar Status geändert:", response.data);
     return response.data;
   } catch (error) {
-    handleError(error, "Fehler beim Ändern des Erledigtstatus");
+    handleError(error, "Fehler beim Ändern des Kommentar-Status");
     return null;
   }
 };

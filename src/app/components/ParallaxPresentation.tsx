@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useRef, useState, useEffect } from "react";
-import { Parallax, ParallaxLayer, IParallax } from "@react-spring/parallax";
+import { Parallax as HorizontalParallax, ParallaxLayer, IParallax } from "@react-spring/parallax";
+import { Parallax as VerticalParallax } from "@react-spring/parallax";
 import { slides } from "../data/slideContent";
 import { Dock } from "./Dock/Dock";
 import { DockCard } from "./DockCard/DockCard";
@@ -24,13 +27,14 @@ const fetcher = (url: string, init?: RequestInit) =>
 export default function ParallaxPresentation({
   onSlideChange,
 }: ParallaxPresentationProps) {
-  const parallax = useRef<IParallax>(null);
+  const horizontalParallax = useRef<IParallax>(null);
+  const verticalParallaxRefs = useRef<(IParallax | null)[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { data: session } = useSession();
   const { data: cursorPositions = [], mutate: mutateCursorPositions } = useSWR<
     CursorPosition[]
   >("/api/cursor-positions", fetcher, {
-    refreshInterval: 100, // Poll every 100ms for cursor updates
+    refreshInterval: 100,
   });
 
   const updateCursorPosition = async (x: number, y: number) => {
@@ -51,9 +55,9 @@ export default function ParallaxPresentation({
     }
   };
 
-  const scroll = (to: number) => {
-    if (parallax.current) {
-      parallax.current.scrollTo(to);
+  const horizontalScroll = (to: number) => {
+    if (horizontalParallax.current) {
+      horizontalParallax.current.scrollTo(to);
       setCurrentSlide(to);
       onSlideChange(to);
     }
@@ -62,9 +66,19 @@ export default function ParallaxPresentation({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight" && currentSlide < slides.length - 1) {
-        scroll(currentSlide + 1);
+        horizontalScroll(currentSlide + 1);
       } else if (e.key === "ArrowLeft" && currentSlide > 0) {
-        scroll(currentSlide - 1);
+        horizontalScroll(currentSlide - 1);
+      } else if (e.key === "ArrowDown") {
+        const currentVerticalParallax = verticalParallaxRefs.current[currentSlide];
+        if (currentVerticalParallax) {
+          currentVerticalParallax.scrollTo(1);
+        }
+      } else if (e.key === "ArrowUp") {
+        const currentVerticalParallax = verticalParallaxRefs.current[currentSlide];
+        if (currentVerticalParallax) {
+          currentVerticalParallax.scrollTo(0);
+        }
       }
     };
 
@@ -84,8 +98,8 @@ export default function ParallaxPresentation({
       style={{ width: "100vw", height: "100vh", background: "#dfdfdf" }}
       onMouseMove={handleMouseMove}
     >
-      <Parallax
-        ref={parallax}
+      <HorizontalParallax
+        ref={horizontalParallax}
         pages={slides.length}
         horizontal
         style={{ top: "0", left: "0" }}
@@ -100,11 +114,56 @@ export default function ParallaxPresentation({
               <div className={`slopeEnd ${slide.gradient}`} />
             </ParallaxLayer>
 
-            <ParallaxLayer className="text content" offset={index} speed={0.3}>
-              <div className="content-wrapper">
-                <h2>{slide.title}</h2>
-                <p>{slide.content}</p>
-              </div>
+            <ParallaxLayer 
+              className="text content" 
+              offset={index} 
+              speed={0.3}
+              style={{ height: "100vh", overflowY: "hidden" }}
+            >
+              <VerticalParallax
+                pages={2}
+                style={{ height: "100vh" }}
+                ref={(ref: IParallax | null) => {
+                  verticalParallaxRefs.current[index] = ref;
+                }}
+              >
+                <ParallaxLayer
+                  offset={0}
+                  speed={0.5}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div className="content-wrapper">
+                    <h2>{slide.title}</h2>
+                    <p>{slide.content}</p>
+                    <div className="scroll-hint mt-8 animate-bounce text-center text-sm text-gray-600">
+                      <p>Nach unten scrollen für mehr Details ↓</p>
+                    </div>
+                  </div>
+                </ParallaxLayer>
+
+                <ParallaxLayer
+                  offset={1}
+                  speed={0.5}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <div className="content-wrapper">
+                    <h3>Weitere Details</h3>
+                    <p>{slide.additionalContent || "Weitere Informationen folgen..."}</p>
+                    <div className="scroll-hint mt-8 animate-bounce text-center text-sm text-gray-600">
+                      <p>Nach oben scrollen zur Übersicht ↑</p>
+                    </div>
+                  </div>
+                </ParallaxLayer>
+              </VerticalParallax>
             </ParallaxLayer>
 
             <ParallaxLayer className="text number" offset={index} speed={0.3}>
@@ -112,7 +171,7 @@ export default function ParallaxPresentation({
             </ParallaxLayer>
           </React.Fragment>
         ))}
-      </Parallax>
+      </HorizontalParallax>
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2">
         <Dock>
           {slides.map((_, index) => (
@@ -123,7 +182,7 @@ export default function ParallaxPresentation({
                     ? "bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent scale-110 transition-transform duration-200"
                     : "text-white/70"
                 }`}
-                onClick={() => scroll(index)}
+                onClick={() => horizontalScroll(index)}
               >
                 {index + 1}
               </button>

@@ -10,7 +10,7 @@ import useSWR from "swr";
 import { fetchComments } from "@/app/lib/api/commentClient";
 import { Loader2 } from "lucide-react";
 
-export default function Home() {
+export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { data: session, status } = useSession();
 
@@ -27,6 +27,7 @@ export default function Home() {
   };
 
   const user = session?.user || {
+    id: "default-id",
     name: "Gast",
     image: "https://via.placeholder.com/40",
   };
@@ -43,13 +44,14 @@ export default function Home() {
     <main className="relative min-h-screen">
       <ParallaxPresentation onSlideChange={handleSlideChange} />
       <FloatingButton />
-      {status === "authenticated" && (
+      {status === "authenticated" && user && (
         <CommentSidebar
           currentSlide={currentSlide}
-          comments={comments}
+          comments={comments || []}
           mutateComments={mutate}
           userAvatar={user.image || ""}
           userName={user.name || ""}
+          currentUserId={user.id || "default-id"}
         />
       )}
     </main>
