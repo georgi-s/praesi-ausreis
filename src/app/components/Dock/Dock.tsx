@@ -57,21 +57,21 @@ export function Dock({ children }: DockProps) {
       <animated.div
         ref={dockRef}
         className="
-          fixed bottom-3 left-1/2 
-          flex items-end h-[58px] 
-          px-2.5 pb-1.5 pt-2.5 gap-3
+          fixed right-3 top-1/2
+          flex flex-col items-center h-auto w-[58px]
+          py-2.5 px-1.5 gap-3
           bg-black/90 rounded-xl 
           will-change-contents box-content
-          origin-bottom
+          origin-right
           backdrop-blur-xl
           border border-white/10
-          sm:max-w-none sm:overflow-visible
-          max-w-[90vw] overflow-x-auto // Nur für mobile Geräte
+          sm:max-h-none sm:overflow-visible
+          max-h-[90vh] overflow-y-auto
         "
         onMouseOver={handleMouseOver}
         onMouseOut={handleMouseOut}
         style={{
-          x: "-50%",
+          y: "-50%",
           scale: zoomLevel
             .to({
               range: [DOCK_ZOOM_LIMIT[0], 1, DOCK_ZOOM_LIMIT[1]],

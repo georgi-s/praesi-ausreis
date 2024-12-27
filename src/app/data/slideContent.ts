@@ -1,4 +1,5 @@
 export interface SlideContent {
+  additionalContent: string;
   title: string;
   content: string;
   gradient: string;
@@ -6,39 +7,90 @@ export interface SlideContent {
 
 export const slides: SlideContent[] = [
   {
-    title: "Einleitung und Motivation",
+    title:
+      "Digitalisierung und Automatisierung der Erfassung und Abrechnung von Auslagen und Reisekosten",
     content:
-      "Entwicklung eines webbasierten Tools zur Automatisierung der Erfassung und Abrechnung von Auslagen und Reisekosten für Reedu GmbH & Co. KG.",
-    gradient: "pink",
+      "Georgi Semov\nReedu GmbH & Co. KG\nZeitraum: Oktober 2023 - Januar 2024",
+    gradient: "react",
+    additionalContent: "Firmenlogo und abstrakte Datenvisualisierung",
   },
   {
-    title: "Projektübersicht",
+    title: "Warum war das Projekt notwendig?",
     content:
-      "Hauptziele: Digitale Erfassung, automatisierte Genehmigungsprozesse, transparente Statusverfolgung, Integration in bestehende IT-Infrastruktur.",
-    gradient: "teal",
+      "• Der analoge Prozess war ineffizient und fehleranfällig\n• Ziel: Prozesse digitalisieren, Transparenz und Effizienz steigern",
+    gradient: "next",
+    additionalContent:
+      "Vorher-Nachher-Diagramm (analog vs. digital)\nIcon für Effizienz/Transparenz",
   },
   {
-    title: "Technische Umsetzung",
+    title: "Projektmanagement mit GitHub Projects",
     content:
-      "Verwendete Technologien: Next.js, PostgreSQL, MINIO Object Storage, Docker. Implementierung von Benutzerauthentifizierung, Datenbankoperationen und Dateiverarbeitung.",
-    gradient: "tomato",
+      "• Nutzung von GitHub Projects als Kanban-Tool\n• Erstellung und Verknüpfung von Tickets für Aufgaben\n• Organisation in Spalten: To Do, In Progress, Done\n• Fortschrittskontrolle durch Verknüpfung mit Pull Requests",
+    gradient: "typescript",
+    additionalContent:
+      "Screenshot des GitHub-Boards mit beschrifteten Spalten\nBeispiel-Ticket: 'Frontend-Formular entwickeln'",
   },
   {
-    title: "Ergebnisse und Vorteile",
+    title: "Vergleich IST- und SOLL-Zustand",
     content:
-      "60% Effizienzsteigerung im Abrechnungsprozess, Reduzierung von Fehlerquellen, erhöhte Transparenz und Benutzerfreundlichkeit, verbesserte Datenverwaltung und -sicherheit.",
-    gradient: "green",
+      "IST:\n• Zeitaufwendige manuelle Prozesse\n• Fehleranfällig\n• Keine Transparenz\n\nSOLL:\n• Digitale Erfassung\n• Automatisierte Prozesse\n• Transparente Statusverfolgung",
+    gradient: "tailwind",
+    additionalContent:
+      "Tabelle mit zwei Spalten (IST/SOLL)\nIcons für jede Kategorie",
   },
   {
-    title: "Wirtschaftliche Betrachtung",
+    title: "Zeitplanung",
     content:
-      "Kosten-Nutzen-Analyse: Amortisation der Entwicklungskosten innerhalb des ersten Jahres.",
-    gradient: "purple",
+      "Vier Phasen:\n• Planung (6 Stunden)\n• Entwurf (9 Stunden)\n• Durchführung (38 Stunden)\n• Abschluss (11 Stunden)\n\nGesamt: 80 Stunden",
+    gradient: "node",
+    additionalContent:
+      "Zeitstrahl oder Gantt-Diagramm mit farblicher Abgrenzung der Phasen",
+  },
+  {
+    title: "Architektur und Technologien",
+    content:
+      "Drei Komponenten:\n• Next.js (Frontend, API)\n• PostgreSQL (Datenbank)\n• MinIO (Dateispeicherung)\n\nContainerisierung mit Docker für Reproduzierbarkeit",
+    gradient: "react",
+    additionalContent:
+      "Diagramm der Architektur (Interaktion zwischen Frontend, Datenbank und MinIO)",
+  },
+  {
+    title: "Ergebnisse der Anwendung",
+    content:
+      "• Intuitive Benutzeroberfläche für Mitarbeitende\n• Automatisierte Genehmigungs- und Statusverfolgungsprozesse\n• Admin-Dashboard mit erweiterten Funktionen",
+    gradient: "next",
+    additionalContent:
+      "Screenshot der Benutzeroberfläche\nDiagramm: Einsparungen",
+  },
+  {
+    title: "Qualitätssicherung",
+    content:
+      "Tests:\n• Unit-Tests (mit Jest)\n• Integrationstests (mit Cypress)\n• Usability-Test mit Thinking-Aloud-Methode\n\nFeedback: Benutzer lobten intuitive Oberfläche und Effizienz",
+    gradient: "typescript",
+    additionalContent:
+      "Ablaufdiagramm der Tests\nStichpunkte mit den wichtigsten Ergebnissen",
+  },
+  {
+    title: "Kosten-Nutzen-Analyse",
+    content:
+      "• Kosten: 3.500 € einmalig + 250 € jährlich\n• Einsparung: 50 % der Bearbeitungskosten (~5.950 €/Jahr)",
+    gradient: "tailwind",
+    additionalContent:
+      "Balkendiagramm: Vergleich der Kosten (analog vs. digital)",
   },
   {
     title: "Fazit und Ausblick",
     content:
-      "Erfolgreiche Digitalisierung, signifikante Effizienzsteigerung. Zukünftig: Entwicklung einer nativen Mobile-App, Integration von KI, Erweiterung der Analysefunktionen.",
-    gradient: "yellow",
+      "Fazit:\n• Projektziele vollständig erreicht\n• Reedu profitiert von effizienterem Prozess und höherer Transparenz\n\nAusblick:\n• Mobile-App mit Offline-Funktionalität\n• OCR-Integration zur automatischen Belegerfassung",
+    gradient: "node",
+    additionalContent:
+      "Timeline oder Icons (Smartphone für Mobile-App, Scanner für OCR)",
+  },
+  {
+    title: "Vielen Dank!",
+    content:
+      "Zusammenfassung der wichtigsten Punkte:\n• Digitalisierung des Abrechnungsprozesses\n• Effizienzsteigerung durch Automatisierung\n• Positive Kosten-Nutzen-Analyse\n\nKontakt: georgi.kirtchev@reedu.de",
+    gradient: "react",
+    additionalContent: "Firmenlogo und Kontaktinformationen",
   },
 ];

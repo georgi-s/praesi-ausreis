@@ -107,22 +107,18 @@ body {
   font-size: 3rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: white;
   text-transform: uppercase;
   letter-spacing: 2px;
 }
 
 .content p {
   font-size: 1.2rem;
-  color: white;
   font-weight: 300;
   line-height: 1.6;
 }
 
 .text {
   font-size: 1.5rem;
-  color: white;
-  text-transform: uppercase;
   pointer-events: none;
 }
 
@@ -132,7 +128,7 @@ body {
   position: absolute;
   bottom: 2rem;
   left: 2rem;
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(235, 92, 55, 0.3);  /* Reedu-Orange mit 30% Opacity */
 }
 
 .trailsText {
@@ -182,6 +178,7 @@ body {
 .button {
   transition: all 0.1s ease;
 }
+
 @keyframes dash {
   to {
     stroke-dashoffset: 1000;
@@ -191,16 +188,26 @@ body {
 @keyframes glow {
   from {
     stroke-opacity: 0.6;
+    stroke-width: 1;
   }
   to {
     stroke-opacity: 1;
+    stroke-width: 2;
   }
 }
 
 .animate-dash {
-  animation: dash 10s linear infinite;
+  stroke-dasharray: 100;
+  animation: dash 10s linear infinite,
+    glow 1.5s ease-in-out infinite alternate forwards;
 }
 
-.animate-glow {
-  animation: glow 1.5s ease-in-out infinite;
+/* Hide scrollbars */
+* {
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }

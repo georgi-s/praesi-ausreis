@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import ParallaxPresentation from "@/app/components/ParallaxPresentation";
-import FloatingButton from "@/app/components/FloatingButton";
 import CommentSidebar from "@/app/components/CommentSidebar";
 import { Comment } from "@/types/comment";
 import useSWR from "swr";
@@ -43,7 +42,6 @@ export default function HomePage() {
   return (
     <main className="relative min-h-screen">
       <ParallaxPresentation onSlideChange={handleSlideChange} />
-      <FloatingButton />
       {status === "authenticated" && user && (
         <CommentSidebar
           currentSlide={currentSlide}

@@ -49,26 +49,17 @@ const CommentSidebar: React.FC<CommentSidebarProps> = ({
     if (!content.trim()) return;
 
     try {
-      const response = await fetch("/api/comments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: content.trim(),
-          slideIndex: currentSlide,
-        }),
-      });
+      const newComment = await addComment(
+        content.trim(),
+        0, // positionX - für Drawer-Kommentare nicht relevant
+        0, // positionY - für Drawer-Kommentare nicht relevant
+        currentSlide
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || "Fehler beim Hinzufügen des Kommentars"
-        );
+      if (newComment) {
+        await mutateComments();
+        setNewComment("");
       }
-
-      await mutateComments();
-      setNewComment("");
     } catch (error) {
       console.error("Fehler beim Hinzufügen des Kommentars:", error);
     }
